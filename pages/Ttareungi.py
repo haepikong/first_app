@@ -67,3 +67,7 @@ if master_file and trip_file:
         st.error(f"오류 발생: {e}")
 else:
     st.info("⬆️ 위 두 개의 CSV 파일을 모두 업로드해주세요.")
+
+pip install streamlit pandas plotly
+streamlit run ddaerungi_map.py
+

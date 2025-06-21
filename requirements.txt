@@ -1,5 +1,5 @@
 streamlit
-yfinancd
-Pandas
+yfinance
+pandas
 plotly
 

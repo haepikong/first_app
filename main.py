@@ -1,7 +1,7 @@
 import streamlit as st
 
 # 페이지 설정
-st.set_page_config(page_title="MBTI 직업 추천기 🎯", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="MBTI 진로 & 음악 추천 🎯🎵", page_icon="🧭", layout="wide")
 
 # ---------------------- 스타일 ----------------------
 st.markdown("""
@@ -25,14 +25,25 @@ st.markdown("""
             font-size: 20px;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         }
+        .music-box {
+            background-color: #D0E8FF;
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 20px;
+            color: #003366;
+            max-width: 600px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # ---------------------- 헤더 ----------------------
-st.markdown('<div class="title">🌈 MBTI로 알아보는 나의 진로는? 🧑‍🚀</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">자신의 MBTI 유형을 선택하면 어울리는 직업을 추천해드려요! 💼✨</div><br>', unsafe_allow_html=True)
+st.markdown('<div class="title">🌈 MBTI로 알아보는 나의 진로와 음악은? 🎧</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">MBTI를 선택하면 어울리는 직업과 음악을 추천해드릴게요! 💼🎶</div><br>', unsafe_allow_html=True)
 
-# ---------------------- MBTI 직업 데이터 ----------------------
+# ---------------------- 데이터 ----------------------
+
 mbti_jobs = {
     'ISTJ': ['👮 경찰', '📊 회계사', '🏛️ 공무원'],
     'ISFJ': ['👩‍⚕️ 간호사', '👩‍🏫 교사', '📚 사서'],
@@ -52,22 +63,13 @@ mbti_jobs = {
     'ENTJ': ['🏢 CEO', '📈 전략컨설턴트', '💰 금융분석가']
 }
 
-mbti_list = list(mbti_jobs.keys())
-
-# ---------------------- MBTI 선택 ----------------------
-selected_mbti = st.selectbox("🔠 MBTI를 선택하세요", mbti_list, index=mbti_list.index("INFP"))
-
-# ---------------------- 추천 출력 ----------------------
-st.markdown(f"### 🧬 `{selected_mbti}` 유형에 어울리는 직업은...")
-st.markdown("---")
-cols = st.columns(3)
-for i, job in enumerate(mbti_jobs[selected_mbti]):
-    with cols[i % 3]:
-        st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
-
-# ---------------------- 하단 정보 ----------------------
-st.markdown("<br><br><hr>", unsafe_allow_html=True)
-st.markdown("✅ 이 웹앱은 성격 유형에 따른 진로 탐색을 돕기 위한 교육용 도구입니다.")
-st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")
+mbti_music = {
+    'ISTJ': '🎶 클래식이나 재즈 — 질서 있는 구조와 집중력 강화',
+    'ISFJ': '🎵 어쿠스틱 팝 — 따뜻하고 편안한 감성',
+    'INFJ': '🎼 인디/로파이 — 사색적이고 감성적인 분위기',
+    'INTJ': '🎧 미니멀 테크노 — 집중력과 고요한 에너지',
+    'ISTP': '🎸 록 또는 블루스 — 자유롭고 즉흥적인 감각',
+    'ISFP': '🎹 피아노 연주곡 또는 뉴에이지 — 감성적이고 조용한 힐링',
+    'INFP': '🎤 감
 
 

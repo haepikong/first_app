@@ -3,7 +3,7 @@ import streamlit as st
 # 페이지 설정
 st.set_page_config(page_title="MBTI 진로 & 음악 추천 🎯🎵", page_icon="🧭", layout="wide")
 
-# ---------------------- 스타일 ----------------------
+# ---------------------- CSS 스타일 ----------------------
 st.markdown("""
     <style>
         .title {
@@ -33,7 +33,7 @@ st.markdown("""
             text-align: center;
             font-size: 20px;
             color: #003366;
-            max-width: 600px;
+            max-width: 700px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -43,7 +43,6 @@ st.markdown('<div class="title">🌈 MBTI로 알아보는 나의 진로와 음�
 st.markdown('<div class="subtitle">MBTI를 선택하면 어울리는 직업과 음악을 추천해드릴게요! 💼🎶</div><br>', unsafe_allow_html=True)
 
 # ---------------------- 데이터 ----------------------
-
 mbti_jobs = {
     'ISTJ': ['👮 경찰', '📊 회계사', '🏛️ 공무원'],
     'ISFJ': ['👩‍⚕️ 간호사', '👩‍🏫 교사', '📚 사서'],
@@ -70,6 +69,37 @@ mbti_music = {
     'INTJ': '🎧 미니멀 테크노 — 집중력과 고요한 에너지',
     'ISTP': '🎸 록 또는 블루스 — 자유롭고 즉흥적인 감각',
     'ISFP': '🎹 피아노 연주곡 또는 뉴에이지 — 감성적이고 조용한 힐링',
-    'INFP': '🎤 감
+    'INFP': '🎤 감성 팝/발라드 — 감정이입이 깊은 곡',
+    'INTP': '🎼 앰비언트 전자음악 — 사고 확장을 돕는 몽환적 사운드',
+    'ESTP': '🎷 펑크락 또는 EDM — 에너지 넘치고 활동적인 리듬',
+    'ESFP': '🎉 팝/댄스 — 신나는 분위기와 파티 감성',
+    'ENFP': '🌟 월드뮤직/퓨전 — 창의적이고 다양한 장르 탐색',
+    'ENTP': '🚀 힙합 또는 얼터너티브 — 도전적이고 독창적인 스타일',
+    'ESTJ': '🎺 브라스 밴드나 퍼레이드 음악 — 조직적이고 리더십 넘치는 느낌',
+    'ESFJ': '🎶 팝 발라드 — 모두가 공감할 수 있는 감성곡',
+    'ENFJ': '🎵 뮤지컬 OST — 드라마틱하고 감정 표현 강한 곡',
+    'ENTJ': '🎧 시네마틱 사운드트랙 — 파워풀하고 비전 있는 음악'
+}
 
+mbti_list = list(mbti_jobs.keys())
 
+# ---------------------- MBTI 선택 ----------------------
+selected_mbti = st.selectbox("🔠 MBTI를 선택하세요", mbti_list, index=mbti_list.index("INFP"))
+
+# ---------------------- 직업 추천 ----------------------
+st.markdown(f"### 💼 `{selected_mbti}` 유형에게 어울리는 직업")
+st.markdown("---")
+
+cols = st.columns(3)
+for i, job in enumerate(mbti_jobs[selected_mbti]):
+    with cols[i % 3]:
+        st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
+
+# ---------------------- 음악 추천 ----------------------
+st.markdown("---")
+st.markdown(f"<div class='music-box'>🎵 <b>{selected_mbti}</b> 유형에게 어울리는 음악 추천:<br>{mbti_music[selected_mbti]}</div>", unsafe_allow_html=True)
+
+# ---------------------- 하단 정보 ----------------------
+st.markdown("<br><hr>", unsafe_allow_html=True)
+st.markdown("✅ 이 웹앱은 성격 유형에 따른 진로 및 음악 취향을 탐색할 수 있는 교육용 도구입니다.")
+st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")

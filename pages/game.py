@@ -1,10 +1,10 @@
 import streamlit as st
 import random
 
-# --------------------- 페이지 설정 ---------------------
+# -------------------- 페이지 설정 --------------------
 st.set_page_config(page_title="🎯 이모지 직업 맞추기 게임!", page_icon="🧩", layout="centered")
 
-# --------------------- 스타일 설정 ---------------------
+# -------------------- CSS 스타일 --------------------
 st.markdown("""
     <style>
         .title {
@@ -37,15 +37,10 @@ st.markdown("""
             border-radius: 15px;
             box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
         }
-        .btn {
-            display: block;
-            margin: 10px auto;
-            font-size: 18px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
-# --------------------- 데이터셋 ---------------------
+# -------------------- 문제 데이터 --------------------
 emoji_jobs = {
     "👨‍⚕️💉🩺": "의사",
     "👨‍🍳🍳🥘": "요리사",
@@ -56,48 +51,74 @@ emoji_jobs = {
     "👨‍🚀🚀🌌": "우주비행사",
     "👩‍🎤🎤🎶": "가수",
     "🧑‍⚖️⚖️📜": "판사",
-    "👩‍🚒🔥🚒": "소방관"
+    "👩‍🚒🔥🚒": "소방관",
+    "🎨🖌️🖼️": "화가",
+    "🎥🎬📽️": "감독",
+    "📸📷🖼️": "사진작가",
+    "✈️👨‍✈️🛩️": "파일럿",
+    "💄💅👄": "뷰티아티스트",
+    "⚽🏃‍♂️🥅": "축구선수",
+    "🎻🎼🎹": "음악가",
+    "🧘‍♀️🧘‍♂️🕉️": "요가강사",
+    "🛠️🔩🔧": "기술자",
+    "🧵🪡👗": "디자이너"
 }
 
-# --------------------- 상태 저장 ---------------------
-if "current_emoji" not in st.session_state:
-    st.session_state.current_emoji, st.session_state.answer = random.choice(list(emoji_jobs.items()))
+TOTAL_QUESTIONS = 20
+
+# -------------------- 상태 초기화 --------------------
+if "quiz" not in st.session_state:
+    st.session_state.quiz = random.sample(list(emoji_jobs.items()), TOTAL_QUESTIONS)
+    st.session_state.index = 0
+    st.session_state.score = 0
     st.session_state.feedback = ""
-    st.session_state.correct = None
+    st.session_state.show_answer = False
+    st.session_state.input = ""
 
-# --------------------- 헤더 ---------------------
-st.markdown('<div class="title">🎉 이모지로 직업 맞추기!</div>', unsafe_allow_html=True)
+# -------------------- 현재 문제 --------------------
+if st.session_state.index < TOTAL_QUESTIONS:
+    emoji, answer = st.session_state.quiz[st.session_state.index]
 
-# --------------------- 문제 카드 ---------------------
-st.markdown(f'<div class="emoji-box">{st.session_state.current_emoji}</div>', unsafe_allow_html=True)
-st.markdown('<div class="job-box">아래에 직업을 입력해보세요! (예: 의사, 요리사, 교사 등)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title">🧩 이모지 직업 퀴즈</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="emoji-box">{emoji}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="job-box">문제 {st.session_state.index+1} / {TOTAL_QUESTIONS} - 이 이모지가 의미하는 직업은?</div>', unsafe_allow_html=True)
 
-user_input = st.text_input("✏️ 당신의 정답:", key="answer_input")
+    user_input = st.text_input("✏️ 당신의 정답:", value=st.session_state.input, key="answer_input")
 
-# --------------------- 정답 확인 ---------------------
-if st.button("✅ 확인하기"):
-    if user_input.strip() == st.session_state.answer:
-        st.session_state.feedback = f'🎯 정답! {st.session_state.answer} 맞아요!'
-        st.session_state.correct = True
-    else:
-        st.session_state.feedback = f'😢 오답! 정답은 {st.session_state.answer}였어요.'
-        st.session_state.correct = False
+    if st.button("✅ 제출"):
+        st.session_state.input = user_input
+        if user_input.strip() == answer:
+            st.session_state.feedback = f"🎉 정답! '{answer}' 맞습니다!"
+            st.session_state.score += 1
+            st.session_state.show_answer = True
+        else:
+            st.session_state.feedback = f"😢 오답! 정답은 '{answer}'였어요."
+            st.session_state.show_answer = True
 
-# --------------------- 피드백 ---------------------
-if st.session_state.feedback:
-    color = "correct" if st.session_state.correct else "wrong"
-    st.markdown(f'<div class="feedback {color}">{st.session_state.feedback}</div>', unsafe_allow_html=True)
+    if st.session_state.show_answer:
+        color = "correct" if st.session_state.input == answer else "wrong"
+        st.markdown(f'<div class="feedback {color}">{st.session_state.feedback}</div>', unsafe_allow_html=True)
 
-# --------------------- 다음 문제 버튼 ---------------------
-if st.session_state.feedback:
-    if st.button("🔁 다음 문제"):
-        st.session_state.current_emoji, st.session_state.answer = random.choice(list(emoji_jobs.items()))
-        st.session_state.feedback = ""
-        st.session_state.correct = None
-        st.session_state.answer_input = ""
+        if st.button("➡️ 다음 문제"):
+            st.session_state.index += 1
+            st.session_state.feedback = ""
+            st.session_state.input = ""
+            st.session_state.show_answer = False
 
-# --------------------- 하단 ---------------------
-st.markdown("<hr>")
-st.markdown("💡 힌트: 이모지를 잘 보고 직업을 상상해보세요!")
-st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")
+# -------------------- 결과 화면 --------------------
+else:
+    st.markdown('<div class="title">🎉 게임 종료!</div>', unsafe_allow_html=True)
+    st.markdown(f"""
+        <div class="job-box" style="text-align:center; font-size:28px;">
+            당신의 점수는 <b>{st.session_state.score} / {TOTAL_QUESTIONS}</b>입니다!<br><br>
+            다시 도전해보시겠어요?
+        </div>
+    """, unsafe_allow_html=True)
 
+    if st.button("🔄 다시 시작하기"):
+        del st.session_state.quiz
+        del st.session_state.index
+        del st.session_state.score
+        del st.session_state.feedback
+        del st.session_state.input
+        del st.session_state.show_answer

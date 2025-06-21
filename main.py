@@ -80,3 +80,4 @@ st.markdown("<br><br><hr>", unsafe_allow_html=True)
 st.markdown("✅ 이 웹앱은 성격 유형에 따른 진로 탐색을 돕기 위한 교육용 도구입니다.")
 st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")
 
+

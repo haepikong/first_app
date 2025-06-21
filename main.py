@@ -30,22 +30,17 @@ st.markdown("""
 
 # ---------------------- 헤더 ----------------------
 st.markdown('<div class="title">🌈 MBTI로 알아보는 나의 진로는? 🧑‍🚀</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">자신의 성격 유형을 선택하고 버튼을 눌러 추천 직업을 확인하세요! 💼✨</div><br>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">자신의 MBTI를 직접 입력하고 추천 직업을 확인하세요! 💼✨</div><br>', unsafe_allow_html=True)
 
-# ---------------------- 사이드바 ----------------------
-st.sidebar.title("🔧 설정")
-st.sidebar.markdown("MBTI를 선택하세요 👇")
+# ---------------------- 사이드바 설명 ----------------------
+st.sidebar.title("📌 사용법")
+st.sidebar.markdown("1. 자신의 MBTI를 입력하세요 (예: INFP)")
+st.sidebar.markdown("2. 버튼을 누르면 추천 직업이 표시됩니다!")
 
-mbti_types = [
-    'ISTJ', 'ISFJ', 'INFJ', 'INTJ',
-    'ISTP', 'ISFP', 'INFP', 'INTP',
-    'ESTP', 'ESFP', 'ENFP', 'ENTP',
-    'ESTJ', 'ESFJ', 'ENFJ', 'ENTJ'
-]
+# ---------------------- 입력창 ----------------------
+user_input = st.text_input("🔠 MBTI를 입력하세요 (예: INFP)").strip().upper()
 
-selected_mbti = st.sidebar.selectbox("MBTI 유형", mbti_types)
-
-# ---------------------- 추천 직업 데이터 ----------------------
+# ---------------------- MBTI 직업 데이터 ----------------------
 mbti_jobs = {
     'ISTJ': ['👮 경찰', '📊 회계사', '🏛️ 공무원'],
     'ISFJ': ['👩‍⚕️ 간호사', '👩‍🏫 교사', '📚 사서'],
@@ -65,17 +60,20 @@ mbti_jobs = {
     'ENTJ': ['🏢 CEO', '📈 전략컨설턴트', '💰 금융분석가']
 }
 
-# ---------------------- 버튼으로 추천 출력 ----------------------
+# ---------------------- 버튼 동작 ----------------------
 if st.button("🎯 직업 추천받기"):
-    st.markdown(f"### 🧬 `{selected_mbti}` 유형에 어울리는 직업은...")
-
-    st.markdown("---")
-    cols = st.columns(3)
-    for i, job in enumerate(mbti_jobs[selected_mbti]):
-        with cols[i % 3]:
-            st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
+    if user_input in mbti_jobs:
+        st.markdown(f"### 🧬 `{user_input}` 유형에 어울리는 직업은...")
+        st.markdown("---")
+        cols = st.columns(3)
+        for i, job in enumerate(mbti_jobs[user_input]):
+            with cols[i % 3]:
+                st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ 올바른 MBTI 유형을 입력해주세요. (예: ENFP, ISTJ 등 4글자 대문자)")
 
 # ---------------------- 하단 정보 ----------------------
 st.markdown("<br><br><hr>", unsafe_allow_html=True)
 st.markdown("✅ 이 웹앱은 성격 유형에 따른 진로 탐색을 돕기 위한 교육용 도구입니다.")
 st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")
+

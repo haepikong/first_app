@@ -1,41 +1,51 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="📍 송파구 따릉이 보관소 지도", layout="wide")
-st.title("🚲 송파구 따릉이 보관소 위치 시각화")
+st.set_page_config(page_title="📍 송파구 따릉이 현황 지도", layout="wide")
+st.title("🚲 송파구 따릉이 대여소 현황 시각화")
+st.markdown("자전거 보관소별 거치대 수와 남은 자전거 수를 색상과 크기로 표시합니다.")
 
-# 직접 추출한 송파구 대여소 데이터 샘플
-data = [
-    {"name": "가락시장역 2번 출구", "lat": 37.4955, "lon": 127.1234},
-    {"name": "경찰병원역 1번 출구", "lat": 37.4998, "lon": 127.1126},
-    {"name": "마천역 1번 출구", "lat": 37.5033, "lon": 127.1525},
-    {"name": "석촌고분역 2번 출구", "lat": 37.5050, "lon": 127.1000},
-    {"name": "송파파크데일 4단지", "lat": 37.5100, "lon": 127.1150},
-    # …더 많은 실제 데이터 추가 가능
-]
+# -- 데이터 불러오기 예시 (CSV 직접 URL로 지정 또는 로컬 업로드) --
+@st.cache_data
+def load_data():
+    # 예시 URL: 실제 CSV 다운로드 URL 필요
+    url = "https://…/PublicBikeStationInfo_Songpa.csv"
+    df = pd.read_csv(url)
+    # columns: ['station_name', 'latitude', 'longitude', 'rack_count', 'available_bikes']
+    # 샘플 필터: 송파구에 해당하는 데이터만
+    df = df[df['district'] == '송파구']
+    return df
 
-df = pd.DataFrame(data)
+# 업로드 방식 예시
+uploaded = st.file_uploader("📥 CSV 파일 업로드 (송파구 따릉이 대여소)")
+if uploaded:
+    df = pd.read_csv(uploaded)
+else:
+    st.warning("CSV 파일을 업로드해 주세요.")
+    st.stop()
 
-# Plotly로 지도 생성
+# -- 산포도 지도 생성 --
 fig = px.scatter_mapbox(
     df,
-    lat="lat",
-    lon="lon",
-    hover_name="name",
-    zoom=13,
+    lat="latitude",
+    lon="longitude",
+    hover_name="station_name",
+    hover_data={"rack_count":True, "available_bikes":True},
+    size="rack_count",
+    color="available_bikes",
+    color_continuous_scale="Viridis",
+    size_max=30,
+    zoom=12,
     height=700
 )
 
-fig.update_layout(
-    mapbox_style="open-street-map",
-    margin={"r":0,"t":0,"l":0,"b":0}
-)
-
+fig.update_layout(mapbox_style="open-street-map", margin={"t":0,"b":0,"l":0,"r":0})
 st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("""
-본 지도는 송파구에 설치된 따릉이 대여소 위치를 표시한 예시입니다.  
-데이터는 서울 열린데이터광장의 마스터 데이터를 바탕으로 표본화했습니다 :contentReference[oaicite:7]{index=7}.
+- 🟥 **마커 크기**: 거치대 전체 수  
+- 🟦 **마커 색상**: 남은 자전거 수 (진할수록 많음)  
+- 📌 지도에서 마커 클릭 시 상세 정보 확인 가능
 """)
+

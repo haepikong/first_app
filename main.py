@@ -30,7 +30,7 @@ st.markdown("""
 
 # ---------------------- 헤더 ----------------------
 st.markdown('<div class="title">🌈 MBTI로 알아보는 나의 진로는? 🧑‍🚀</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">자신의 성격 유형을 선택하면 추천 직업을 알려줄게요! 💼✨</div><br>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">자신의 성격 유형을 선택하고 버튼을 눌러 추천 직업을 확인하세요! 💼✨</div><br>', unsafe_allow_html=True)
 
 # ---------------------- 사이드바 ----------------------
 st.sidebar.title("🔧 설정")
@@ -65,19 +65,17 @@ mbti_jobs = {
     'ENTJ': ['🏢 CEO', '📈 전략컨설턴트', '💰 금융분석가']
 }
 
-# ---------------------- 직업 추천 출력 ----------------------
-st.markdown(f"### 🎯 선택한 MBTI: `{selected_mbti}` 유형에 어울리는 직업은...")
+# ---------------------- 버튼으로 추천 출력 ----------------------
+if st.button("🎯 직업 추천받기"):
+    st.markdown(f"### 🧬 `{selected_mbti}` 유형에 어울리는 직업은...")
 
-st.markdown("---")
-cols = st.columns(3)
-
-for i, job in enumerate(mbti_jobs[selected_mbti]):
-    with cols[i % 3]:
-        st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    cols = st.columns(3)
+    for i, job in enumerate(mbti_jobs[selected_mbti]):
+        with cols[i % 3]:
+            st.markdown(f'<div class="job-card">{job}</div>', unsafe_allow_html=True)
 
 # ---------------------- 하단 정보 ----------------------
 st.markdown("<br><br><hr>", unsafe_allow_html=True)
 st.markdown("✅ 이 웹앱은 성격 유형에 따른 진로 탐색을 돕기 위한 교육용 도구입니다.")
 st.markdown("📌 *Made with ❤️ by ChatGPT + Streamlit*")
-
-

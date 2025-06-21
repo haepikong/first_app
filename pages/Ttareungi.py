@@ -2,69 +2,66 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="🚲 따릉이 대여소 지도 시각화", layout="wide")
-st.title("📍 서울시 따릉이 대여/반납 현황 지도")
+st.set_page_config(page_title="🚲 따릉이 지도 시각화", layout="wide")
+st.title("📍 서울시 따릉이 대여소 현황 시각화")
+st.markdown("✔️ 마커 크기는 총 이용 횟수, 색상은 반납률입니다.")
 
-st.markdown("CSV 인코딩 문제, 빈 파일 문제를 방지하고, 업로드한 데이터를 자동 분석하여 지도에 표시합니다.")
-
-# 여러 인코딩 시도 및 에러 방지
+# ⚙️ 안전하게 여러 인코딩 시도하며 CSV 읽기
 def safe_read_csv(uploaded_file):
-    encodings = ['utf-8-sig', 'cp949', 'euc-kr', 'latin1']
+    encodings = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr', 'latin1']
     for enc in encodings:
         try:
             df = pd.read_csv(uploaded_file, encoding=enc)
             if df.empty or df.shape[1] == 0:
-                continue  # 컬럼 없음: 다음 인코딩 시도
+                continue
             return df
         except Exception:
             continue
-    st.error("❌ 파일을 열 수 없습니다. 인코딩 또는 형식을 확인해주세요.")
-    return None
+    return pd.DataFrame()  # 아무것도 못 읽으면 빈 DataFrame 반환
 
-# 업로드
+# 📁 파일 업로드
 st.subheader("1️⃣ 대여소 위치 정보 CSV")
-master_file = st.file_uploader("예: station_id, station_name, latitude, longitude 포함", type="csv")
+master_file = st.file_uploader("station_id, station_name, latitude, longitude 컬럼 포함", type="csv")
 
 st.subheader("2️⃣ 대여/반납 통계 CSV")
-trip_file = st.file_uploader("예: station_id, rental_count, return_count 포함", type="csv")
+trip_file = st.file_uploader("station_id, rental_count, return_count 컬럼 포함", type="csv")
 
-# 처리
 if master_file and trip_file:
     master = safe_read_csv(master_file)
     trip = safe_read_csv(trip_file)
 
-    if master is None or trip is None:
+    if master.empty or trip.empty:
+        st.warning("⚠️ 업로드된 파일을 읽을 수 없습니다. Excel에서 **CSV UTF-8(콤마로 분리)** 형식으로 다시 저장해보세요.")
         st.stop()
 
-    # 컬럼 자동 정리
+    # ✅ 컬럼명 정리
     master.columns = master.columns.str.strip().str.lower()
     trip.columns = trip.columns.str.strip().str.lower()
 
-    # 컬럼 유효성 검사
+    # ✅ 필수 컬럼 존재 여부 확인
     master_cols = {"station_id", "station_name", "latitude", "longitude"}
     trip_cols = {"station_id", "rental_count", "return_count"}
 
     if not master_cols.issubset(master.columns):
-        st.error(f"📛 마스터 CSV에 다음 컬럼이 없습니다: {master_cols - set(master.columns)}")
-        st.write("🔍 업로드한 파일:", master.head())
+        st.error(f"❌ 마스터 파일에 누락된 컬럼: {master_cols - set(master.columns)}")
+        st.write(master.head())
         st.stop()
 
     if not trip_cols.issubset(trip.columns):
-        st.error(f"📛 통계 CSV에 다음 컬럼이 없습니다: {trip_cols - set(trip.columns)}")
-        st.write("🔍 업로드한 파일:", trip.head())
+        st.error(f"❌ 통계 파일에 누락된 컬럼: {trip_cols - set(trip.columns)}")
+        st.write(trip.head())
         st.stop()
 
-    # 숫자 변환
-    trip['rental_count'] = pd.to_numeric(trip['rental_count'], errors='coerce')
-    trip['return_count'] = pd.to_numeric(trip['return_count'], errors='coerce')
+    # ✅ 숫자형으로 변환
+    trip['rental_count'] = pd.to_numeric(trip['rental_count'], errors='coerce').fillna(0)
+    trip['return_count'] = pd.to_numeric(trip['return_count'], errors='coerce').fillna(0)
 
-    # 병합
-    df = pd.merge(master, trip, on="station_id", how="left")
-    df[['rental_count', 'return_count']] = df[['rental_count', 'return_count']].fillna(0)
+    # ✅ 병합 및 파생 컬럼 생성
+    df = pd.merge(master, trip, on="station_id", how="left").fillna(0)
     df['total_trips'] = df['rental_count'] + df['return_count']
     df['return_ratio'] = df['return_count'] / df['rental_count'].replace(0, 1)
 
-    # 지도 시각화
+    # ✅ 지도 시각화
     fig = px.scatter_mapbox(
         df,
         lat="latitude",
@@ -85,7 +82,7 @@ if master_file and trip_file:
     )
     fig.update_layout(mapbox_style="open-street-map", margin={"t": 0, "b": 0, "l": 0, "r": 0})
     st.plotly_chart(fig, use_container_width=True)
-    st.success("✅ 지도 시각화 완료!")
 
+    st.success("✅ 지도 시각화 완료!")
 else:
-    st.info("⬆️ 두 개의 CSV 파일을 모두 업로드해주세요.")
+    st.info("⬆️ 위 두 개의 CSV 파일을 업로드해주세요.")

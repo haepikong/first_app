@@ -1,62 +1,69 @@
 import streamlit as st
 import pandas as pd
-import zipfile
-import io
 import plotly.express as px
 
-st.set_page_config(page_title="🚲 서울시 따릉이 이용 지도", layout="wide")
-st.title("📍 서울 따릉이 대여소 이용 현황")
+# 페이지 설정
+st.set_page_config(page_title="🚲 따릉이 대여소 이용 시각화", layout="wide")
+st.title("📍 서울시 따릉이 대여소 이용 현황 지도")
+st.markdown("마커의 크기는 총 이용 횟수, 색상은 반납률을 나타냅니다.")
 
-# — 데이터 업로드 UI
-master_file = st.file_uploader("1️⃣ 대여소 마스터 CSV 업로드", type=["csv"])
-trip_file = st.file_uploader("2️⃣ 대여/반납 승객수 ZIP 또는 CSV 업로드", type=["zip","csv"])
+# 파일 업로드
+st.subheader("1️⃣ 따릉이 대여소 위치 정보 CSV 업로드")
+master_file = st.file_uploader("🗂️ 대여소 마스터 파일 (위도, 경도 포함)", type=["csv"])
 
-if not master_file or not trip_file:
-    st.info("각각의 데이터 파일을 업로드해주세요.")
-    st.stop()
+st.subheader("2️⃣ 따릉이 대여/반납 승객 수 CSV 업로드")
+trip_file = st.file_uploader("🗂️ 대여/반납 이용 정보 파일", type=["csv"])
 
-# — 마스터 정보 로드
-master = pd.read_csv(master_file)
-# master columns 포함 예: ['station_id','station_name','latitude','longitude']
+# 업로드 완료되었을 때 실행
+if master_file and trip_file:
+    try:
+        # 데이터 읽기
+        master = pd.read_csv(master_file)
+        trip = pd.read_csv(trip_file)
 
-# — 승객수 데이터 로드 (ZIP 또는 CSV)
-if trip_file.name.endswith(".zip"):
-    z = zipfile.ZipFile(io.BytesIO(trip_file.read()))
-    # ZIP 안에 단일 CSV 가정
-    name = z.namelist()[0]
-    trip = pd.read_csv(z.open(name))
+        # 필수 컬럼 존재 여부 확인
+        required_master_cols = {"station_id", "station_name", "latitude", "longitude"}
+        required_trip_cols = {"station_id", "rental_count", "return_count"}
+
+        if not required_master_cols.issubset(master.columns) or not required_trip_cols.issubset(trip.columns):
+            st.error("📛 CSV 파일에 필수 컬럼이 없습니다.")
+            st.stop()
+
+        # 데이터 병합
+        merged = pd.merge(master, trip, on="station_id", how="left").fillna(0)
+
+        # 파생 컬럼 생성
+        merged["total_trips"] = merged["rental_count"] + merged["return_count"]
+        merged["return_ratio"] = merged["return_count"] / merged["rental_count"].replace(0, 1)
+
+        # 지도 시각화
+        fig = px.scatter_mapbox(
+            merged,
+            lat="latitude",
+            lon="longitude",
+            hover_name="station_name",
+            hover_data={
+                "rental_count": True,
+                "return_count": True,
+                "total_trips": True,
+                "return_ratio": True,
+                "latitude": False,
+                "longitude": False
+            },
+            size="total_trips",
+            color="return_ratio",
+            color_continuous_scale="Viridis",
+            size_max=30,
+            zoom=11,
+            height=700
+        )
+
+        fig.update_layout(mapbox_style="open-street-map", margin={"t":0, "b":0, "l":0, "r":0})
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.success("✅ 지도 시각화가 완료되었습니다!")
+
+    except Exception as e:
+        st.error(f"오류 발생: {e}")
 else:
-    trip = pd.read_csv(trip_file)
-
-# trip 컬럼 예: ['station_id','rental_count','return_count']
-# — 필요 컬럼만 추출
-cols = ['station_id','rental_count','return_count']
-trip = trip[cols].groupby('station_id', as_index=False).sum()
-
-# — 마스터 + 통계 데이터 병합
-df = master.merge(trip, on='station_id', how='left').fillna(0)
-
-# — 파생 지표 계산
-df['total_trips'] = df['rental_count'] + df['return_count']
-df['return_ratio'] = df['return_count'] / df['rental_count'].replace(0,1)
-
-# — 지도 시각화
-fig = px.scatter_mapbox(
-    df,
-    lat='latitude', lon='longitude',
-    hover_name='station_name',
-    hover_data=['rental_count','return_count','return_ratio','total_trips'],
-    size='total_trips', color='return_ratio',
-    color_continuous_scale='Turbo',
-    size_max=40,
-    zoom=11,
-    height=700
-)
-fig.update_layout(mapbox_style="open-street-map", margin={'l':0,'r':0,'t':0,'b':0})
-st.plotly_chart(fig, use_container_width=True)
-
-st.markdown("""
-- 🔵 **마커 크기**: 총 이용 건수(대여+반납)
-- 🔴 **색상 진할수록 반납률 높음**
-- 📊 마커 클릭 시 상세 이용 정보 확인 가능
-""")
+    st.info("⬆️ 위 두 개의 CSV 파일을 모두 업로드해주세요.")
